@@ -148,11 +148,14 @@ async def start(rest_args: argparse.Namespace | None = None):
     parser.add_argument(
         '-b',
         '--source',
-        help="""anubis, baidu, bevigil, bing, bingapi, brave, bufferoverun,
-                            censys, certspotter, criminalip, crtsh, duckduckgo, fullhunt, github-code,
-                            hackertarget, hunter, hunterhow, intelx, netlas, onyphe, otx, pentesttools, projectdiscovery,
-                            rapiddns, rocketreach, securityTrails, sitedossier, subdomaincenter, subdomainfinderc99, threatminer, tomba,
-                            urlscan, virustotal, yahoo, whoisxml, zoomeye, venacus""",
+        help="""Using ',' to separate sources.Using all to run all sources.""",
+    )
+
+    parser.add_argument(
+        '-ls',
+        '--list-sources',
+        action='store_true',
+        help='Show availabe sources.'
     )
 
     # determines if the filename is coming from rest api or user
@@ -180,6 +183,9 @@ async def start(rest_args: argparse.Namespace | None = None):
     except Exception:
         pass
 
+    if args.list_sources:
+        print('\n'.join(Core.get_supportedengines()))
+        return
     if len(filename) > 2 and filename[:2] == '~/':
         filename = os.path.expanduser(filename)
 
@@ -869,6 +875,7 @@ async def start(rest_args: argparse.Namespace | None = None):
         # cast to string so Rest API can understand the type
         return_ips.extend([str(ip) for ip in sorted([netaddr.IPAddress(ip.strip()) for ip in set(all_ip)])])
         # return list(set(all_emails)), return_ips, full, '', ''
+        all_hosts = [host.replace('*.', '').lower() if host.startswith('*.') else host.lower() for host in all_hosts]
         all_hosts = [host.replace('www.', '') for host in all_hosts if host.replace('www.', '') in all_hosts]
         all_hosts = list(sorted(set(all_hosts)))
         return (
@@ -1003,6 +1010,10 @@ async def start(rest_args: argparse.Namespace | None = None):
                         if host[4:] in all_hosts or host[4:] in full:
                             temp.add(host[4:])
                             continue
+                    if host[:2] == '*.':
+                        if host[2:] in all_hosts or host[2:] in full:
+                            temp.add(host[2:])
+                            continue
                     temp.add(host)
             full = list(sorted(temp))
             full.sort(key=lambda el: el.split(':')[0])
@@ -1018,6 +1029,8 @@ async def start(rest_args: argparse.Namespace | None = None):
                     print(f'An exception has occurred while attempting to insert: {host} IP into DB: {e}')
                     continue
         else:
+            # strip *. and lower()
+            all_hosts = [host.replace('*.', '').lower() if host.startswith('*.') else host.lower() for host in all_hosts]
             all_hosts = [host.replace('www.', '') for host in all_hosts if host.replace('www.', '') in all_hosts]
             all_hosts = list(sorted(set(all_hosts)))
             print('\n[*] Hosts found: ' + str(len(all_hosts)))
@@ -1050,6 +1063,9 @@ async def start(rest_args: argparse.Namespace | None = None):
             if host.endswith(word):
                 if host[:4] == 'www.':
                     if host[4:] in all_hosts or host[4:] in full:
+                        continue
+                if host[:2] == '*.':
+                    if host[2:] in all_hosts or host[2:] in full:
                         continue
                 if host not in full:
                     full.append(host)
