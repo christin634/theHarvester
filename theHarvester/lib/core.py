@@ -1,3 +1,4 @@
+# coding=utf-8
 from __future__ import annotations
 
 import asyncio
@@ -65,6 +66,10 @@ class Core:
     @staticmethod
     def censys_key() -> tuple:
         return Core.api_keys()['censys']['id'], Core.api_keys()['censys']['secret']
+
+    @staticmethod
+    def certsio_key() -> tuple:
+        return Core.api_keys()["certsio"]["key"]
 
     @staticmethod
     def criminalip_key() -> str:
@@ -174,6 +179,8 @@ class Core:
             'certspotter',
             'criminalip',
             'crtsh',
+            'certsio',
+            'dnsdumpster',
             'duckduckgo',
             'fullhunt',
             'github-code',

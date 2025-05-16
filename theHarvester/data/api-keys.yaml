@@ -15,6 +15,9 @@ apikeys:
   criminalip:
     key:
 
+  certsio:
+    key:
+
   fullhunt:
     key:
 
